@@ -1,0 +1,49 @@
+name: Cloud Run Service Image Deployment to Google Artifact Repository
+on:
+  push:
+    branches:
+      - dev
+      - prod
+
+jobs:
+  go-binary-to-artifact-registry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    env:
+      REGISTRY: "us-east4-docker.pkg.dev"
+      PATH_TO_CONTAINER: "dragondrop-${{ github.ref_name }}/dragondrop-https-triggers/cloud-run-service"
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+
+      - id: uppercase_env
+        uses: ASzc/change-string-case-action@v5
+        with:
+          string: ${{ github.ref_name }}
+
+      - name: Google Authentication
+        id: auth
+        uses: "google-github-actions/auth@v0"
+        with:
+          token_format: "access_token"
+          workload_identity_provider: "projects/${{ secrets[format('PROJECT_ID_{0}', steps.uppercase_env.outputs.uppercase)] }}/locations/global/workloadIdentityPools/deploy-serverless-${{ github.ref_name }}/providers/github-actions"
+          service_account: "deploy-serverless-${{ github.ref_name }}@dragondrop-${{ github.ref_name }}.iam.gserviceaccount.com"
+
+      - name: Docker Auth
+        id: docker-auth
+        uses: 'docker/login-action@v2'
+        with:
+          username: 'oauth2accesstoken'
+          password: ${{ steps.auth.outputs.access_token }}
+          registry: ${{ env.REGISTRY }}
+
+      - name: Build and push API Container to Artifact Registry
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.PATH_TO_CONTAINER }}:latest --file=Dockerfile .
+          docker push ${{ env.REGISTRY }}/${{ env.PATH_TO_CONTAINER }}:latest    
