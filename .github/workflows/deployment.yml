@@ -16,7 +16,7 @@ jobs:
 
     env:
       REGISTRY: "us-east4-docker.pkg.dev"
-      PATH_TO_CONTAINER: "dragondrop-${{ github.ref_name }}/dragondrop-https-triggers/cloud-run-service"
+      PATH_TO_CONTAINER: "dragondrop-${{ github.ref_name }}/dragondrop-https-triggers/container-app-service"
 
     steps:
       - name: Checkout branch

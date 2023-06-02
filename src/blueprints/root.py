@@ -37,9 +37,7 @@ def execute_cloud_run_job():
         )
 
         # Triggering the job to actually run
-        current_app.logger.info(
-            f"Getting container instance configuration as .yml"
-        )
+        current_app.logger.info(f"Getting container instance configuration as .yml")
         result = subprocess.run(
             [
                 "az",
@@ -60,11 +58,14 @@ def execute_cloud_run_job():
         with open("./config.yml", "r") as f:
             existing_config = yaml.load(f, Loader=yaml.FullLoader)
 
-        updated_config = _generate_update_env_vars_file(existing_config=existing_config, request_json=request_json)
+        updated_config = _generate_update_env_vars_file(
+            existing_config=existing_config, request_json=request_json
+        )
 
         with open("./updated-config.yml", "w") as f:
             yaml.dump(updated_config, f)
 
+        # Note: This command can take 1-2 minutes to run and as a result is a bit slow.
         result = subprocess.run(
             [
                 "az",
@@ -73,7 +74,7 @@ def execute_cloud_run_job():
                 "-g",
                 resource_group,
                 "-f",
-                "./updated-config.yml"
+                "./updated-config.yml",
             ],
             capture_output=True,
             text=True,
@@ -87,7 +88,6 @@ def execute_cloud_run_job():
         return f"Server Error: {e}", 500
 
 
-# TODO: Implementation and unit testing needed here
 def _generate_update_env_vars_file(existing_config: dict, request_json: dict) -> dict:
     """
     Helper function to generate the right string for the update-env-vars feature flag.
@@ -98,5 +98,20 @@ def _generate_update_env_vars_file(existing_config: dict, request_json: dict) ->
         raise ValueError(
             "'DRAGONDROP_JOBID' must be included in the JSON body sent to this endpoint."
         )
+
+    new_environment_variables = []
+
+    # Setting secret environment variables
+    for key, value in os.environ.items():
+        if key.startswith("DRAGONDROP_"):
+            new_environment_variables.append({"name": key, "secureValue": value})
+
+    # Setting non-secret environment variables
+    for key, value in request_json.items():
+        new_environment_variables.append({"name": key, "value": value})
+
+    updated_config["properties"]["containers"][0]["properties"][
+        "environmentVariables"
+    ] = new_environment_variables
 
     return updated_config
