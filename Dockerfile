@@ -1,4 +1,5 @@
 FROM python:3.11.3-alpine3.18
+RUN apk --no-cache add gcc python3-dev
 
 COPY requirements.txt requirements.txt
 
