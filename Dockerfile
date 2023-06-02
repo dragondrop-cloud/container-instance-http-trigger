@@ -1,8 +1,4 @@
 FROM python:3.11.3-alpine3.18
-RUN apk --no-cache add curl sudo bash
-
-# Install the Azure CLI within the container
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
 COPY requirements.txt requirements.txt
 
