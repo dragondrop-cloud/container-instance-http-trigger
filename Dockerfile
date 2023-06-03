@@ -1,5 +1,4 @@
-FROM python:3.11.3-alpine3.18
-RUN apk update && apk add --no-cache sudo && sudo apk add --no-cache gcc python3-dev
+FROM python:3.10.1-slim-buster
 
 COPY requirements.txt requirements.txt
 
