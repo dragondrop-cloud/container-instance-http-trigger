@@ -103,8 +103,10 @@ def _generate_update_env_vars_file(existing_config: dict, request_json: dict) ->
 
     # Setting secret environment variables
     for key, value in os.environ.items():
-        if key.startswith("DRAGONDROP_"):
-            new_environment_variables.append({"name": key, "secureValue": value})
+        if key.startswith("DRAGONDROP-"):
+            new_environment_variables.append(
+                {"name": key.replace("-", "_"), "secureValue": value}
+            )
 
     # Setting non-secret environment variables
     for key, value in request_json.items():
