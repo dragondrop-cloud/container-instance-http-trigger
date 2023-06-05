@@ -69,6 +69,9 @@ def execute_cloud_run_job():
         current_app.logger.info(
             f"#3 Attempt:"
         )
+        # https://github.com/Azure/azure-cli/issues/22677#issuecomment-1384954612
+        os.environ["APPSETTING_WEBSITE_SITE_NAME"] = "placeholder"
+
         az_cli = get_default_cli()
         az_cli.invoke([
             "login",
