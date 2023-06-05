@@ -17,7 +17,7 @@ def execute_cloud_run_job():
     """
     try:
         request_json = request.get_json()
-        container_group_id = os.getenv("CONTAINER_GROUP_ID")
+        container_instance_id = os.getenv("CONTAINER_INSTANCE_ID")
         resource_group = os.getenv("RESOURCE_GROUP")
 
         current_app.logger.info(
@@ -28,6 +28,8 @@ def execute_cloud_run_job():
                 "az",
                 "login",
                 "--identity",
+                "-u",
+                os.getenv("USER_ASSIGNED_IDENTITY_ID"),
             ],
             capture_output=True,
             text=True,
@@ -44,7 +46,7 @@ def execute_cloud_run_job():
                 "container",
                 "export",
                 "--ids",
-                container_group_id,
+                container_instance_id,
                 "-f",
                 "./config.yml",
             ],
