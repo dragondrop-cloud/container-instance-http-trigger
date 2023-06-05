@@ -49,9 +49,11 @@ def execute_cloud_run_job():
         )
 
         # TODO: Attempt number two, use the azure-cli command line to invoke the command
+        current_app.logger.info(
+            f"#2 Attempt:"
+        )
         az_cli = get_default_cli()
         az_cli.invoke([
-                "az",
                 "container",
                 "export",
                 "--ids",
@@ -64,9 +66,11 @@ def execute_cloud_run_job():
         )
 
         # TODO: Attempt number three, use the azure-cli to authenticate, and then invoke the command
+        current_app.logger.info(
+            f"#3 Attempt:"
+        )
         az_cli = get_default_cli()
         az_cli.invoke([
-            "az",
             "login",
             "--identity",
             "-u",
