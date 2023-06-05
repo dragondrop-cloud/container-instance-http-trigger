@@ -4,6 +4,8 @@ Root url app blueprint.
 import os
 import subprocess
 import yaml
+from azure.cli.core import get_default_cli
+from azure.identity import DefaultAzureCredential
 from flask import Blueprint, request, current_app
 
 root = Blueprint("root", __name__)
@@ -23,20 +25,71 @@ def execute_cloud_run_job():
         current_app.logger.info(
             f"Authentication with the Azure Container Instance's managed identity."
         )
+        default_credential = DefaultAzureCredential(managed_identity_client_id=os.getenv("USER_ASSIGNED_IDENTITY_ID"))
+        current_app.logger.info(
+            f"Default Azure Credential received without error."
+        )
+        # TODO: Test case here
+        current_app.logger.info(f"Getting container instance configuration as .yml, test #1")
         result = subprocess.run(
             [
                 "az",
-                "login",
-                "--identity",
-                "-u",
-                os.getenv("USER_ASSIGNED_IDENTITY_ID"),
+                "container",
+                "export",
+                "--ids",
+                container_instance_id,
+                "-f",
+                "./config.yml",
             ],
             capture_output=True,
             text=True,
         )
         current_app.logger.info(
-            f"Std. Out: {result.stdout}\nStd. Error: {result.stderr}"
+            f"#1 Std. Out: {result.stdout}\nStd. Error: {result.stderr}"
         )
+
+        # TODO: Attempt number two, use the azure-cli command line to invoke the command
+        az_cli = get_default_cli()
+        az_cli.invoke([
+                "az",
+                "container",
+                "export",
+                "--ids",
+                container_instance_id,
+                "-f",
+                "./config.yml",
+            ])
+        current_app.logger.info(
+            f"#2 CLI Result: {az_cli.result.result}\nCLI Result Error: {az_cli.result.error}"
+        )
+
+        # TODO: Attempt number three, use the azure-cli to authenticate, and then invoke the command
+        az_cli = get_default_cli()
+        az_cli.invoke([
+            "az",
+            "login",
+            "--identity",
+            "-u",
+            os.getenv("USER_ASSIGNED_IDENTITY_ID"),
+        ])
+        current_app.logger.info(
+            f"#3 CLI Result: {az_cli.result.result}\nCLI Result Error: {az_cli.result.error}"
+        )
+
+        # result = subprocess.run(
+        #     [
+        #         "az",
+        #         "login",
+        #         "--identity",
+        #         "-u",
+        #         os.getenv("USER_ASSIGNED_IDENTITY_ID"),
+        #     ],
+        #     capture_output=True,
+        #     text=True,
+        # )
+        # current_app.logger.info(
+        #     f"Std. Out: {result.stdout}\nStd. Error: {result.stderr}"
+        # )
 
         # Triggering the job to actually run
         current_app.logger.info(f"Getting container instance configuration as .yml")
@@ -105,9 +158,9 @@ def _generate_update_env_vars_file(existing_config: dict, request_json: dict) ->
 
     # Setting secret environment variables
     for key, value in os.environ.items():
-        if key.startswith("DRAGONDROP-"):
+        if key.startswith("DRAGONDROP_"):
             new_environment_variables.append(
-                {"name": key.replace("-", "_"), "secureValue": value}
+                {"name": key, "secureValue": value}
             )
 
     # Setting non-secret environment variables

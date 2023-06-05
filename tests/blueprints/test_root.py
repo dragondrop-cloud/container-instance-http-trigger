@@ -30,7 +30,7 @@ def test_generate_update_env_vars_file():
 
     input_request_json = {"DRAGONDROP_JOBID": "new_var_value"}
 
-    os.environ["DRAGONDROP-NEWSECUREENVVAR"] = "new_secure_value"
+    os.environ["DRAGONDROP_NEWSECUREENVVAR"] = "new_secure_value"
     expected_output = {
         "properties": {
             "containers": [
