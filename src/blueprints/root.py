@@ -27,7 +27,7 @@ def execute_cloud_run_job():
             [
                 "az",
                 "login",
-                "--version",
+                "--identity",
             ],
             capture_output=True,
             text=True,
