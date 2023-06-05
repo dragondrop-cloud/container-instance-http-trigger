@@ -76,8 +76,19 @@ def execute_cloud_run_job():
         az_cli.invoke([
             "login",
             "--identity",
-            "-u",
-            os.getenv("USER_ASSIGNED_IDENTITY_ID"),
+            # "-u",
+            # os.getenv("USER_ASSIGNED_IDENTITY_ID"),
+        ])
+        current_app.logger.info(
+            f"#3 CLI Result: {az_cli.result.result}\nCLI Result Error: {az_cli.result.error}"
+        )
+
+        az_cli = get_default_cli()
+        az_cli.invoke([
+            "login",
+            "--i",
+            # "-u",
+            # os.getenv("USER_ASSIGNED_IDENTITY_ID"),
         ])
         current_app.logger.info(
             f"#3 CLI Result: {az_cli.result.result}\nCLI Result Error: {az_cli.result.error}"
