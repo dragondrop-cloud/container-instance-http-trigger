@@ -3,7 +3,7 @@ Root url app blueprint.
 """
 import os
 from azure.mgmt.containerinstance import ContainerInstanceManagementClient
-from azure.identity import DefaultAzureCredential
+from azure.identity import ManagedIdentityCredential
 from flask import Blueprint, request, current_app
 
 root = Blueprint("root", __name__)
@@ -20,12 +20,13 @@ def execute_container_instance():
 
         CONTAINER_GROUP_ID = os.getenv("CONTAINER_INSTANCE_ID")
         RESOURCE_GROUP = os.getenv("RESOURCE_GROUP")
-        SUBSCRIPTION_ID = os.getenv("SUBSCRIPTION_ID", None)
+        SUBSCRIPTION_ID = os.getenv("SUBSCRIPTION_ID")
+        MANAGED_ID_CLIENT_ID = os.getenv("MANAGED_ID_CLIENT_ID")
 
         current_app.logger.info(
             f"Authentication with the Azure Container Instance's managed identity."
         )
-        default_credential = DefaultAzureCredential()
+        default_credential = ManagedIdentityCredential(client_id=MANAGED_ID_CLIENT_ID)
         current_app.logger.info(f"Default Azure Credential received without error.")
 
         container_instance_client = ContainerInstanceManagementClient(
