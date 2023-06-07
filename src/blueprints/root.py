@@ -2,6 +2,7 @@
 Root url app blueprint.
 """
 import os
+import traceback
 from azure.mgmt.containerinstance import ContainerInstanceManagementClient
 from azure.identity import ManagedIdentityCredential
 from flask import Blueprint, request, current_app
@@ -60,6 +61,10 @@ def execute_container_instance():
 
         return "Azure Container Instance successfully updated and triggered", 201
     except Exception as e:
+        stack_trace = traceback.format_exc()
+        current_app.logger.info(
+            f"Server error w/stack trace:\n{stack_trace}"
+        )
         return f"Server Error: {e}", 500
 
 
