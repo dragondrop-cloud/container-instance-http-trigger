@@ -44,8 +44,9 @@ def execute_container_instance():
         container_group_def.containers[0].environment_variables = new_env_vars
 
         current_app.logger.info(
-            f"Updating the container instance: {container_group_def}"
+            f"Updating the container instance with definition:\n{container_group_def}"
         )
+        current_app.logger.info(f"New environment variables to set:\n{new_env_vars}")
 
         container_group = (
             container_instance_client.container_groups.begin_create_or_update(
@@ -62,9 +63,7 @@ def execute_container_instance():
         return "Azure Container Instance successfully updated and triggered", 201
     except Exception as e:
         stack_trace = traceback.format_exc()
-        current_app.logger.info(
-            f"Server error w/stack trace:\n{stack_trace}"
-        )
+        current_app.logger.info(f"Server error w/stack trace:\n{stack_trace}")
         return f"Server Error: {e}", 500
 
 
@@ -78,6 +77,12 @@ def _generate_env_vars(request_json: dict) -> list:
         )
 
     new_environment_variables = []
+
+    # TODO: Debugging what is going on with the duplicated environment variables:
+    current_app.logger.info(
+        f"Within _generate_env_vars:\nrequest_json values:\n{request_json}"
+    )
+    current_app.logger.info(f"environment values:\n{os.environ}\n\n")
 
     # Setting secret environment variables
     for key, value in os.environ.items():
