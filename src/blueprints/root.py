@@ -39,6 +39,12 @@ def execute_container_instance():
             RESOURCE_GROUP, CONTAINER_GROUP_ID
         )
 
+        # TODO: Debugging what is going on with the duplicated environment variables:
+        current_app.logger.info(
+            f"Within _generate_env_vars:\nrequest_json values:\n{request_json}"
+        )
+        current_app.logger.info(f"environment values:\n{os.environ}\n\n")
+
         new_env_vars = _generate_env_vars(request_json=request_json)
 
         container_group_def.containers[0].environment_variables = new_env_vars
@@ -78,19 +84,13 @@ def _generate_env_vars(request_json: dict) -> list:
 
     new_environment_variables = []
 
-    # TODO: Debugging what is going on with the duplicated environment variables:
-    current_app.logger.info(
-        f"Within _generate_env_vars:\nrequest_json values:\n{request_json}"
-    )
-    current_app.logger.info(f"environment values:\n{os.environ}\n\n")
-
     # Setting secret environment variables
     for key, value in os.environ.items():
         if key.startswith("DRAGONDROP_"):
-            new_environment_variables.append({"name": key, "secureValue": value})
+            new_environment_variables.append({"name": key, "secureValue": str(value)})
 
     # Setting non-secret environment variables
     for key, value in request_json.items():
-        new_environment_variables.append({"name": key, "value": value})
+        new_environment_variables.append({"name": key, "value": str(value)})
 
     return new_environment_variables
